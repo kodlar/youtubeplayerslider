@@ -1,79 +1,59 @@
 
-$( document ).ready(function() {
-    console.log( "ready!" );
-     $( '.play-button' ).trigger( "click" );
-     playCurrentVideo();
-});
-
-$('.play-button').on('click', function () {
-    $(this).hide();
-    $(this).parent().fadeOut();
-    //console.log( $(this).parent().siblings('.slider-video')[0]);
-   /*
-    let command = {
-          "event": "command",
-          "func": "playVideo",
-          "args":""
-        };
-        console.log(JSON.stringify(command));
-	 $('iframe').each(function(){
-        $(this)[0].contentWindow.postMessage(JSON.stringify(command), "*");
-    });
-    */
-    
-     /*
-     $('iframe').each(function(){
-     //console.log($(this)[0]);
-       var r = $(this)[0].contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-    
-    });*/
-    //$(this).parent().siblings('.slider-video')[0].play();
-});
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  var firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 
-// Additionnal code for the slider
-var pos = 0,
-    slides = $('.slide'),
-    numOfSlides = slides.length;
-    console.log(numOfSlides);
+  var player;
+  //ilk yüklemede bu videoyu yükle
+  function onYouTubeIframeAPIReady() {
+    player = ReturnPlayer('player0','-U10Z41byGk','UUyUv3WsP8WH5kRWHSTe9sug');        
+  }
 
-function nextSlide(){
-    stopCurrentVideo();
-    console.log(slides.eq(pos));
-    slides.eq(pos).animate({left:'-100%'},500);
-    pos = pos >= numOfSlides-1 ? 0 : ++pos;
-    slides.eq(pos).css({left:'100%'}).animate({left:0},500);    
-}
-
-function previousSlide(){
-    stopCurrentVideo();
-    slides.eq(pos).animate({left:'100%'},500);
-    pos = pos == 0 ? numOfSlides-1 : --pos;
-    slides.eq(pos).css({left:'-100%'}).animate({left:0},500);
-    
-}
-function playCurrentVideo(){
-    let command = {
-        "event": "command",
-        "func": "playVideo",
-        "args":""
-      };      
-   $('iframe').each(function(){
-      $(this)[0].contentWindow.postMessage(JSON.stringify(command), "*");
-  });
-}
-function stopCurrentVideo(){
-
-    let commandpause = {
-          "event": "command",
-          "func": "pauseVideo",
-          "args": ""
+  function ReturnPlayer(id,videoId,playlistId)
+  {
+     player = new YT.Player(id, {
+        height: '100%',
+        width: '100%',
+        videoId: videoId,
+        playerVars: {
+          'playsinline': 1,
+          'enablejsapi' :1,
+          'controls':1,
+          'rel':0,
+          'autoplay':1,
+          'listType ':'user_uploads',
+          'list':playlistId
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
         }
-        $('iframe').each(function(){
-             $(this)[0].contentWindow.postMessage(JSON.stringify(commandpause), "*");
-        });
-}
+      });
+      return player;
+  }
 
-$('.left').click(previousSlide);
-$('.right').click(nextSlide);
+  function onPlayerReady(event) {
+    //console.log(event.target.showVideoInfo());
+    //console.log(event.target.playerInfo)
+    $('#resTitle h1').html(event.target.playerInfo.videoData.title)
+    //event.target.playVideo()
+  }
+  var done = false;
+  function onPlayerStateChange(event) {
+     //console.log(event.data);
+     //console.log(event)
+     $('#resTitle h1').html(event.target.playerInfo.videoData.title)
+    // if (event.data == YT.PlayerState.PLAYING && !done) {
+    //   setTimeout(stopVideo, 6000);
+    //   done = true;
+    // }
+  }
 
+  function stopVideo() {
+    if(player != undefined)
+      {
+        player.stopVideo();
+     }
+  }
